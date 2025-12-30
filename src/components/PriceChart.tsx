@@ -3,9 +3,10 @@ import { PriceHistory } from '../types';
 interface PriceChartProps {
   priceHistory: PriceHistory[];
   targetPrice?: number | null;
+  currentPrice?: number | null;
 }
 
-export function PriceChart({ priceHistory, targetPrice }: PriceChartProps) {
+export function PriceChart({ priceHistory, targetPrice, currentPrice }: PriceChartProps) {
   if (!priceHistory || priceHistory.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center text-gray-500">
@@ -17,6 +18,8 @@ export function PriceChart({ priceHistory, targetPrice }: PriceChartProps) {
   const prices = priceHistory.map(p => parseFloat(p.price.toString()));
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
+  // Use currentPrice if provided, otherwise use the last price in history
+  const displayCurrentPrice = currentPrice ?? prices[prices.length - 1];
   const priceRange = maxPrice - minPrice || 1;
 
   const width = 800;
@@ -145,7 +148,7 @@ export function PriceChart({ priceHistory, targetPrice }: PriceChartProps) {
         <div className="bg-blue-50 rounded-lg p-3">
           <div className="text-sm text-gray-600">Current</div>
           <div className="text-lg font-bold text-blue-600">
-            ${prices[prices.length - 1].toFixed(2)}
+            ${displayCurrentPrice.toFixed(2)}
           </div>
         </div>
         <div className="bg-green-50 rounded-lg p-3">
@@ -154,9 +157,9 @@ export function PriceChart({ priceHistory, targetPrice }: PriceChartProps) {
             ${minPrice.toFixed(2)}
           </div>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3">
+        <div className="bg-white rounded-lg p-3 border border-gray-200">
           <div className="text-sm text-gray-600">Highest</div>
-          <div className="text-lg font-bold text-gray-700">
+          <div className="text-lg font-bold text-gray-900">
             ${maxPrice.toFixed(2)}
           </div>
         </div>

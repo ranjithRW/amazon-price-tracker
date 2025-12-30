@@ -167,6 +167,7 @@ export function ProductModal({ productId, onClose }: ProductModalProps) {
           <PriceChart
             priceHistory={priceHistory}
             targetPrice={activeAlert?.target_price || activeAlert?.predicted_price}
+            currentPrice={product.current_price}
           />
 
           <div className="bg-gray-50 rounded-lg p-4">
