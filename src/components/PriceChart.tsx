@@ -164,6 +164,108 @@ export function PriceChart({ priceHistory, targetPrice, currentPrice }: PriceCha
           </div>
         </div>
       </div>
+
+      {/* Detailed Price History Table - Shows ALL History */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-md font-semibold text-gray-800">Complete Price History</h4>
+          <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+            {priceHistory.length} {priceHistory.length === 1 ? 'entry' : 'entries'} total
+          </span>
+        </div>
+        <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+          <div className="max-h-96 overflow-y-auto">
+            <table className="w-full">
+              <thead className="bg-gray-100 sticky top-0 z-10">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Date & Time
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Change
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    % Change
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {[...priceHistory]
+                  .sort((a, b) => new Date(b.checked_at).getTime() - new Date(a.checked_at).getTime())
+                  .map((entry, index, sortedHistory) => {
+                    const currentPrice = parseFloat(entry.price.toString());
+                    const previousPrice = index < sortedHistory.length - 1 
+                      ? parseFloat(sortedHistory[index + 1].price.toString())
+                      : null;
+                    const priceChange = previousPrice !== null ? currentPrice - previousPrice : null;
+                    const percentChange = previousPrice !== null && previousPrice !== 0
+                      ? ((priceChange! / previousPrice) * 100)
+                      : null;
+                    const isIncrease = priceChange !== null && priceChange > 0;
+                    const isDecrease = priceChange !== null && priceChange < 0;
+
+                    return (
+                      <tr key={entry.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          <div>
+                            <div className="font-medium">
+                              {new Date(entry.checked_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(entry.checked_at).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
+                          ${currentPrice.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
+                          {priceChange !== null ? (
+                            <span className={`font-medium ${isIncrease ? 'text-red-600' : isDecrease ? 'text-green-600' : 'text-gray-600'}`}>
+                              {isIncrease ? '↑' : isDecrease ? '↓' : ''} {priceChange > 0 ? '+' : ''}${Math.abs(priceChange).toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
+                          {percentChange !== null ? (
+                            <span className={`font-medium ${isIncrease ? 'text-red-600' : isDecrease ? 'text-green-600' : 'text-gray-600'}`}>
+                              {percentChange > 0 ? '+' : ''}{percentChange.toFixed(2)}%
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+          <div className="bg-gray-100 px-4 py-2 text-xs text-gray-600 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <span>Displaying all {priceHistory.length} price history {priceHistory.length === 1 ? 'entry' : 'entries'} (sorted by most recent first)</span>
+              {priceHistory.length > 0 && (
+                <span className="text-gray-500">
+                  First tracked: {new Date(Math.min(...priceHistory.map(p => new Date(p.checked_at).getTime()))).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

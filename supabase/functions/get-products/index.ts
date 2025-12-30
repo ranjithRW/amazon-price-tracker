@@ -34,11 +34,13 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      // Fetch all price history entries (high limit to ensure we get complete history)
       const { data: priceHistory } = await supabase
         .from('price_history')
         .select('*')
         .eq('product_id', productId)
-        .order('checked_at', { ascending: true });
+        .order('checked_at', { ascending: true })
+        .limit(10000); // High limit to ensure we get all history entries
 
       const { data: alerts } = await supabase
         .from('alerts')
