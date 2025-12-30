@@ -19,9 +19,12 @@ function App() {
   const loadProducts = async () => {
     try {
       const data = await getProducts();
-      setProducts(data.products || []);
+      // Ensure we always have an array of products
+      const productsArray = Array.isArray(data.products) ? data.products : [];
+      setProducts(productsArray);
     } catch (error) {
       console.error('Failed to load products:', error);
+      setProducts([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

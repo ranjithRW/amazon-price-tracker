@@ -13,6 +13,14 @@ export function ProductModal({ productId, onClose }: ProductModalProps) {
   const [data, setData] = useState<ProductWithHistory | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   useEffect(() => {
     loadProductDetails();
   }, [productId]);
@@ -20,9 +28,19 @@ export function ProductModal({ productId, onClose }: ProductModalProps) {
   const loadProductDetails = async () => {
     try {
       const result = await getProductDetails(productId);
-      setData(result);
+      // Ensure we have valid data structure
+      if (result && result.product) {
+        setData({
+          product: result.product,
+          priceHistory: Array.isArray(result.priceHistory) ? result.priceHistory : [],
+          alerts: Array.isArray(result.alerts) ? result.alerts : []
+        });
+      } else {
+        setData(null);
+      }
     } catch (error) {
       console.error('Failed to load product details:', error);
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -33,9 +51,10 @@ export function ProductModal({ productId, onClose }: ProductModalProps) {
       <div 
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
         onClick={onClose}
+        style={{ zIndex: 9999 }}
       >
         <div 
-          className="bg-white rounded-lg p-8"
+          className="bg-white rounded-lg p-8 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -53,14 +72,16 @@ export function ProductModal({ productId, onClose }: ProductModalProps) {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto"
       onClick={onClose}
+      style={{ zIndex: 9999 }}
     >
       <div 
-        className="bg-white rounded-lg max-w-4xl w-full my-8"
+        className="bg-white rounded-lg max-w-4xl w-full my-8 max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        style={{ marginTop: '2rem', marginBottom: '2rem' }}
       >
-        <div className="p-6 border-b border-gray-200 flex items-start justify-between">
+        <div className="p-6 border-b border-gray-200 flex items-start justify-between flex-shrink-0">
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
               {product.title}
@@ -86,7 +107,7 @@ export function ProductModal({ productId, onClose }: ProductModalProps) {
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           <div className="flex items-start gap-6">
             {product.image_url && (
               <img
